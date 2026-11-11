@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!-- provides the browser interface for recording audio and displaying transcription results. -->
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+
+	<!-- makes the page display correctly on phones and smaller screens. -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Speech to Text</title>
+
+	<!-- Keep styling separate from page structure. -->
+	<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+	<main class="app-container">
+
+		<section class="transcription-card">
+
+			<header class="app-header">
+				<h1>Speech to Text</h1>
+
+				<!-- for user clarity-->
+				<p class="app-description">
+					Record your voice and convert it into text.
+				</p>
+			</header>
+
+
+			<!-- Recording controls -->
+			<div class="controls">
+				<button type="button" class="button button-primary" id="record-button">
+					Record
+				</button>
+
+				<!-- button is disabled initially -->
+				<button type="button" class="button button-secondary" id="stop-button" disabled>
+					Stop Recording
+				</button>
+			</div>
+
+
+			<!--
+	                aria-live allows screen readers to announce application
+	                state changes such as recording, transcribing and errors.
+	            -->
+			<p id="recording-status" class="status-message" role="status" aria-live="polite">
+				Ready to record
+			</p>
+
+
+			<!-- Recorded audio playback -->
+			<section class="audio-section">
+				<h2>Your Recording</h2>
+
+				<audio id="recorded-audio" controls>
+				</audio>
+			</section>
+
+
+			<!-- Transcription output -->
+			<section class="result-section">
+				<h2>Transcription</h2>
+
+				<div class="transcription-output">
+					<p id="transcription-result" aria-live="polite">
+					</p>
+				</div>
+			</section>
+
+		</section>
+
+	</main>
+
+	<!-- referring to JS -->
+	<script src="script.js"></script>
+</body>
+
+</html>

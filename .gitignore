@@ -1,0 +1,38 @@
+# Java and Maven
+target/
+build/
+*.class
+
+# Eclipse
+.metadata/
+.settings/
+.classpath
+.project
+
+# macOS
+.DS_Store
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Logs
+*.log
+
+# Media and generated files
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.wav
+*.mp3
+*.m4a
+frame_speeds/
+recordings/
+output/
+
+# Original submission archives
+*.zip
