@@ -14,7 +14,8 @@ public record ProcessedVideoFrame(
         long mediaTimestampUs,
         long logicalTimestampUs,
         long targetTimeNs,
-        long preparedAtNs) {
+        long preparedAtNs,
+        String subtitleText) {
 
     public ProcessedVideoFrame {
 
@@ -26,5 +27,6 @@ public record ProcessedVideoFrame(
 
         Objects.requireNonNull(frame, "frame cannot be null");
         Objects.requireNonNull(info, "frame metadata cannot be null");
+        Objects.requireNonNull(subtitleText, "subtitleText cannot be null");
     }
 }

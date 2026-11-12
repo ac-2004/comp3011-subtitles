@@ -138,7 +138,8 @@ public class CommandLineController {
 
             char option = arg.charAt(i);
             
-            if ("hax12nsfwyvdjmbp".indexOf(option) == -1) {
+            // add S to recognise subtitles 
+            if ("hax12nsfwyvdjmbpS".indexOf(option) == -1) {
                 errorMessage = "unknown option: -" + option;
                 return;
             }
@@ -159,7 +160,7 @@ public class CommandLineController {
 	            
 	            // frame-processing options
 	            case 'n', 's', 'f', 'w', 'y', 'v',
-	            'd', 'j', 'm', 'b', 'p' ->
+	            'd', 'j', 'm', 'b', 'p', 'S' ->
 	            	requestedEffects.add(String.valueOf(option));
 	            	
 	            // handle unrecognised options
@@ -184,6 +185,7 @@ public class CommandLineController {
         case "--mottle-frames"  -> "m";
         case "--bleed-frames"   -> "b";
         case "--pepper-frames"  -> "p";
+        case "--subtitles-frames" -> "S"; // long form
         default                 -> null;
     	};
     }
@@ -212,6 +214,7 @@ public class CommandLineController {
         System.out.println("  -m, --mottle-frames    Add cloudy emulsion mottling");
         System.out.println("  -b, --bleed-frames     Bleed light into frames");
         System.out.println("  -p, --pepper-frames    Pepper frames with dark spots/blotches");
+        System.out.println("  -S, --subtitle-frames  Add speech-to-text subtitles to frames");
         
         // explaining combinations of the effects as well
         System.out.println();

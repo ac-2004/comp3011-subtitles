@@ -12,13 +12,13 @@ public final class FrameProcessingWorker implements AutoCloseable {
     // constructs and initialises this worker's independent processors.
     public FrameProcessingWorker(
             List<String> effectCodes,
-            InfoVideo videoInfo) throws Exception {
+            InfoVideo videoInfo, SubtitleManager subtitleManager) throws Exception {
 
         Objects.requireNonNull(effectCodes, "effectCodes");
         Objects.requireNonNull(videoInfo, "videoInfo");
 
         pipeline = new FrameProcessingPipeline(
-                FrameProcessorFactory.createPipeline(effectCodes)
+                FrameProcessorFactory.createPipeline(effectCodes, subtitleManager)
         );
 
         pipeline.initialise(videoInfo);

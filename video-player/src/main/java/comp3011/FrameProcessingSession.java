@@ -35,7 +35,8 @@ public final class FrameProcessingSession implements AutoCloseable {
             List<String> effectCodes,
             InfoVideo videoInfo,
             int workerCount,
-            int maximumPendingFrames) {
+            int maximumPendingFrames,
+            SubtitleManager subtitleManager) {
 
         Objects.requireNonNull(effectCodes, "effectCodes");
         Objects.requireNonNull(videoInfo, "videoInfo");
@@ -50,7 +51,7 @@ public final class FrameProcessingSession implements AutoCloseable {
         localWorker = ThreadLocal.withInitial(() -> {
             try {
                 FrameProcessingWorker worker =
-                        new FrameProcessingWorker(configuration, videoInfo);
+                        new FrameProcessingWorker(configuration, videoInfo, subtitleManager);
 
                 workers.add(worker);
                 return worker;

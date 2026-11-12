@@ -59,7 +59,7 @@ public class FrameProcessorFactory {
 	}
 	
 	// explicit-identity factory
-	public static FrameProcessor create(String code, int occurrenceIndex) {
+	public static FrameProcessor create(String code, int occurrenceIndex, SubtitleManager subtitleManager) {
 		if (occurrenceIndex < 0) {
 	        throw new IllegalArgumentException(
 	            "Occurrence index cannot be negative"
@@ -78,6 +78,7 @@ public class FrameProcessorFactory {
             case "j" -> new FrameJitterer(occurrenceIndex);
             case "m" -> new FrameMottler(occurrenceIndex);
             case "p" -> new FramePepperer(occurrenceIndex);
+            case "S" -> new SubtitleFrameProcessor(subtitleManager);
             
             default -> throw new IllegalArgumentException(
         		"unknown frame processor: " + code
@@ -87,7 +88,7 @@ public class FrameProcessorFactory {
 	
 	// builds an ordered processor sequence with deterministic identities.
 	public static List<FrameProcessor> createPipeline(
-	        List<String> effectCodes) {
+	        List<String> effectCodes, SubtitleManager subtitleManager) {
 
 	    Objects.requireNonNull(effectCodes, "effectCodes");
 
@@ -101,7 +102,7 @@ public class FrameProcessorFactory {
 	        // first occurrence receives index 0; the next receives index 1.
 	        int index = occurrences.getOrDefault(code, 0);
 
-	        processors.add(create(code, index));
+	        processors.add(create(code, index, subtitleManager));
 
 	        occurrences.put(code, index + 1);
 	    }

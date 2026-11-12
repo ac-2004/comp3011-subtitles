@@ -142,6 +142,9 @@ public class VideoPlayerModel {
     // prevents shutdown cleanup from being started more than once.
     private boolean shutdownRequested = false;
     
+    private final SubtitleManager subtitleManager = new SubtitleManager();
+    
+    private String currentSubtitleText = "";
     
     private final List<String> effectCodes;
 
@@ -166,6 +169,14 @@ public class VideoPlayerModel {
     // making currentTimestampUs accessible
     public long getCurrentTimestampUs() {
     	return currentTimestampUs;
+    }
+    
+    public String getCurrentSubtitleText() {
+        return currentSubtitleText;
+    }
+    
+    public String getSubtitleAt(long timestampUs) {
+        return subtitleManager.getSubtitleAt(timestampUs);
     }
 
     public void play(File file) {
@@ -468,7 +479,8 @@ public class VideoPlayerModel {
 	                result.mediaTimestampUs(),
 	                result.logicalTimestampUs(),
 	                result.targetTimeNs(),
-	                System.nanoTime()
+	                System.nanoTime(),
+	                result.subtitleText()
 	        ));
 	
 	    } finally {
@@ -729,6 +741,7 @@ public class VideoPlayerModel {
         PreparedFrame frame = preparedFrame;
         preparedFrame = null;
         currentTimestampUs = frame.logicalTimestampUs();
+        currentSubtitleText = frame.subtitleText();
         relativeSeekBaseUs = NO_SEEK_REQUEST;
 
         // Dump some logging to the console once per second so that real time performance can be monitored.
@@ -906,7 +919,8 @@ public class VideoPlayerModel {
 	            effectCodes,
 	            currentVideoInfo,
 	            PROCESSING_WORKERS,
-	            MAX_PENDING_VIDEO_FRAMES
+	            MAX_PENDING_VIDEO_FRAMES,
+	            subtitleManager
 	    );
 	}
 
@@ -950,7 +964,8 @@ public class VideoPlayerModel {
             long mediaTimestampUs,
             long logicalTimestampUs,
             long targetTimeNs,
-            long preparedAtNs) {
+            long preparedAtNs,
+            String subtitleText) {
     }
 
     private static class PendingAudio {

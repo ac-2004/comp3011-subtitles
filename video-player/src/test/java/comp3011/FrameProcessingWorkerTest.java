@@ -18,7 +18,7 @@ class FrameProcessingWorkerTest {
 
         assertThrows(
                 NullPointerException.class,
-                () -> new FrameProcessingWorker(null, null)
+                () -> new FrameProcessingWorker(null, null, null)
         );
     }
     
@@ -62,9 +62,9 @@ class FrameProcessingWorkerTest {
             }
 
             try (FrameProcessingWorker firstWorker =
-                         new FrameProcessingWorker(effectCodes, videoInfo);
+                         new FrameProcessingWorker(effectCodes, videoInfo, null);
                  FrameProcessingWorker secondWorker =
-                         new FrameProcessingWorker(effectCodes, videoInfo)) {
+                         new FrameProcessingWorker(effectCodes, videoInfo, null)) {
 
                 InfoFrame info = new InfoFrame(946, 0);
 
@@ -131,9 +131,9 @@ class FrameProcessingWorkerTest {
             );
 
             try (FrameProcessingWorker freshWorker =
-                         new FrameProcessingWorker(effectCodes, videoInfo);
+                         new FrameProcessingWorker(effectCodes, videoInfo, null);
                  FrameProcessingWorker experiencedWorker =
-                         new FrameProcessingWorker(effectCodes, videoInfo)) {
+                         new FrameProcessingWorker(effectCodes, videoInfo, null)) {
 
                 // Process earlier frames on the second worker only.
                 for (int frameNumber = 940; frameNumber < 946; frameNumber++) {

@@ -44,7 +44,7 @@ public class FrameProcessorFactoryTest {
 	    List<FrameProcessor> processors =
 	            FrameProcessorFactory.createPipeline(
 	                List.of("n", "s", "f", "w", "y", "v",
-	                        "d", "j", "m", "b", "p")
+	                        "d", "j", "m", "b", "p"), null
 	            );
 
 	    assertEquals(11, processors.size());
@@ -69,10 +69,10 @@ public class FrameProcessorFactoryTest {
 	    List<String> effects = List.of("d", "d", "f", "j");
 
 	    List<FrameProcessor> first =
-	            FrameProcessorFactory.createPipeline(effects);
+	            FrameProcessorFactory.createPipeline(effects, null);
 
 	    List<FrameProcessor> second =
-	            FrameProcessorFactory.createPipeline(effects);
+	            FrameProcessorFactory.createPipeline(effects, null);
 
 	    assertEquals(first.size(), second.size());
 
@@ -88,7 +88,7 @@ public class FrameProcessorFactoryTest {
 
 	    assertThrows(
 	        IllegalArgumentException.class,
-	        () -> FrameProcessorFactory.create("d", -1)
+	        () -> FrameProcessorFactory.create("d", -1, null)
 	    );
 	}
 	
@@ -99,12 +99,12 @@ public class FrameProcessorFactoryTest {
 
 	    List<FrameProcessor> first =
 	            FrameProcessorFactory.createPipeline(
-	                    List.of("s", "s", "f", "d", "m", "p", "j")
+	                    List.of("s", "s", "f", "d", "m", "p", "j"), null
 	            );
 
 	    List<FrameProcessor> second =
 	            FrameProcessorFactory.createPipeline(
-	                    List.of("s", "s", "f", "d", "m", "p", "j")
+	                    List.of("s", "s", "f", "d", "m", "p", "j"), null
 	            );
 
 	    assertEquals(first.size(), second.size());

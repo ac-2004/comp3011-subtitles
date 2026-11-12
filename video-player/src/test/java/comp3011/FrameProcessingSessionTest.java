@@ -30,7 +30,7 @@ class FrameProcessingSessionTest {
 
 	    assertThrows(
 	            NullPointerException.class,
-	            () -> new FrameProcessingSession(null, info, 2, 4)
+	            () -> new FrameProcessingSession(null, info, 2, 4, null)
 	    );
 	}
 
@@ -57,7 +57,7 @@ class FrameProcessingSessionTest {
                              List.of(),
                              info,
                              2,
-                             4
+                             4, null
                      )) {
 
             for (int i = 0; i < 4; i++) {

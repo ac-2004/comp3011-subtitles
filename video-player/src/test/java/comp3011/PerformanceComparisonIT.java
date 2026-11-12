@@ -85,7 +85,8 @@ public class PerformanceComparisonIT {
                              EFFECTS,
                              videoInfo,
                              workerCount,
-                             10
+                             10,
+                             null
                      )) {
 
             int submitted = 0;

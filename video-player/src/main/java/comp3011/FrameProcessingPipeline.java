@@ -74,6 +74,18 @@ public final class FrameProcessingPipeline implements AutoCloseable {
         return frame;
     }
     
+    private String getProcessedSubtitle() {
+    	String subtitle = "";
+    	
+    	for (FrameProcessor processor : processors) {
+            if (processor instanceof SubtitleFrameProcessor subtitleProcessor) {
+                subtitle = subtitleProcessor.getCurrentSubtitle();
+            }
+        }
+
+        return subtitle;
+    }
+    
     // process independently owned video-frame job
     public ProcessedVideoFrame process(VideoFrameJob job)
             throws Exception {
@@ -81,7 +93,8 @@ public final class FrameProcessingPipeline implements AutoCloseable {
         Objects.requireNonNull(job, "job");
 
         Frame processedFrame = process(job.frame(), job.info());
-
+        String subtitle = getProcessedSubtitle();
+        
         return new ProcessedVideoFrame(
                 job.sequenceNumber(),
                 job.generation(),
@@ -90,7 +103,8 @@ public final class FrameProcessingPipeline implements AutoCloseable {
                 job.mediaTimestampUs(),
                 job.logicalTimestampUs(),
                 job.targetTimeNs(),
-                System.nanoTime()
+                System.nanoTime(),
+                subtitle
         );
     }
     
