@@ -142,6 +142,7 @@ public class VideoPlayerModel {
     // prevents shutdown cleanup from being started more than once.
     private boolean shutdownRequested = false;
     
+    
     private final List<String> effectCodes;
 
     public VideoPlayerModel(
@@ -160,6 +161,11 @@ public class VideoPlayerModel {
         this.audioOutputStateChangedHandler = audioOutputStateChangedHandler;
         this.effectCodes = List.copyOf(effectCodes);
 
+    }
+    
+    // making currentTimestampUs accessible
+    public long getCurrentTimestampUs() {
+    	return currentTimestampUs;
     }
 
     public void play(File file) {

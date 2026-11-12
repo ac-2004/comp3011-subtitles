@@ -57,6 +57,12 @@ public class VideoPlayerView {
     private final Button forwardFiveButton;
     private final Button stopButton;
     private final Button audioButton;
+    
+    // button for subtitles
+    private final Button subtitleButton;
+    
+    // subtitle label references JavaFX Label as it displays text
+    private final Label subtitleLabel;
 
     public VideoPlayerView() {
         imageView.setPreserveRatio(true);
@@ -76,6 +82,30 @@ public class VideoPlayerView {
         stopButton = iconButton(createStopIcon());
         audioButton = iconButton(createAudioIcon(false));
         setPlaybackControlsDisabled(true);
+        
+        // initalising subtitles button
+        subtitleButton = iconButton(createSubtitleIcon("CC"));
+        
+        subtitleLabel = new Label("");
+        // StackPane responsible for containing video display
+        // adding to video
+        // getChildren() returns UI elements in StackPane
+        videoPane.getChildren().add(subtitleLabel);
+        
+        // alignment
+        // bottom centre of page
+        StackPane.setAlignment(subtitleLabel,  Pos.BOTTOM_CENTER);
+        // insets creates spacing around label. 
+        StackPane.setMargin(subtitleLabel,  new Insets(0, 20, 25, 20));
+        
+        // styling the subtitles
+        subtitleLabel.setStyle(
+    		"-fx-text-fill: white;" +
+    	    "-fx-font-size: 22px;" +
+    	    "-fx-font-family: Arial;" +
+    	    "-fx-background-color: rgba(0, 0, 0, 0.7);" +
+    	    "-fx-padding: 6px 12px;"
+    	);
 
         HBox controls = new HBox(
                 10,
@@ -85,6 +115,7 @@ public class VideoPlayerView {
                 forwardFiveButton,
                 stopButton,
                 audioButton,
+                subtitleButton,
                 statusLabel);
 
         controls.setPadding(new Insets(10));
@@ -126,6 +157,20 @@ public class VideoPlayerView {
     public Button getAudioButton() {
         return audioButton;
     }
+    
+    // subtitle button
+    public Button getSubtitleButton() {
+    	return subtitleButton;
+    }
+    
+    // subtitles enabled/disabled
+    public void setSubtitleButtonEnabled(boolean enabled) {
+    	if (!enabled) {
+    		subtitleButton.setOpacity(0.4);
+    	} else {
+    		subtitleButton.setOpacity(1);
+    	}
+    }
 
     public void setStatus(String status) {
         statusLabel.setText(status);
@@ -150,6 +195,17 @@ public class VideoPlayerView {
     public void showAudioEnabled(boolean audioEnabled) {
         audioButton.setGraphic(createAudioIcon(audioEnabled));
     }
+    
+    // updating subtitle with playback
+    public void setSubtitleText(String subtext) {
+    	subtitleLabel.setText(subtext);
+    	if (subtext.isEmpty()) {
+    		subtitleLabel.setVisible(false);
+    	} else {
+    		subtitleLabel.setVisible(true);
+    	}
+    		
+    }
 
     public void setPlaybackControlsDisabled(boolean disabled) {
         startOverButton.setDisable(disabled);
@@ -169,6 +225,8 @@ public class VideoPlayerView {
         setButtonTooltip(forwardFiveButton, "[RIGHT]");
         setButtonTooltip(stopButton, "[ESC]");
         setButtonTooltip(audioButton, "[A]");
+        // for subtitles, use 's'
+        setButtonTooltip(subtitleButton, "[S]");
     }
 
     private void setButtonTooltip(Button button, String text) {
@@ -198,6 +256,8 @@ public class VideoPlayerView {
                         + "-fx-font-size: 12px;"
                         + "-fx-text-fill: black;");
     }
+    
+    
 
     private void showTooltip(String text, double sceneX, double sceneY) {
         tooltipLabel.setText(text);
@@ -356,5 +416,27 @@ public class VideoPlayerView {
         line.setStrokeWidth(2.0);
         line.setStrokeLineCap(StrokeLineCap.ROUND);
         return line;
+    }
+    
+    // button for subtitles
+    private Pane createSubtitleIcon(String text) {
+    	Pane pane = new Pane();
+    	
+    	pane.setMinSize(ICON_SIZE, ICON_SIZE);
+        pane.setPrefSize(ICON_SIZE, ICON_SIZE);
+        pane.setMaxSize(ICON_SIZE, ICON_SIZE);
+    	
+    	if (text != null) {
+            Label label = new Label(text);
+            label.setAlignment(Pos.CENTER);
+            label.setMinSize(ICON_SIZE, ICON_SIZE);
+            label.setPrefSize(ICON_SIZE, ICON_SIZE);
+            label.setMaxSize(ICON_SIZE, ICON_SIZE);
+            label.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: black;");
+            label.setMouseTransparent(true);
+            pane.getChildren().add(label);
+        }
+    	
+    	return pane;
     }
 }

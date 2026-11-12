@@ -34,6 +34,8 @@ public class VideoPlayerController {
     private final VideoPlayerModel model;
     private final VideoPlayerView view;
     private final BiConsumer<Integer, Integer> videoSizeChangedHandler;
+        
+    private boolean subtitlesEnabled = true;
 
     public VideoPlayerController(
             boolean audioEnabled,
@@ -57,6 +59,7 @@ public class VideoPlayerController {
         view.getStopButton().setOnAction(_ -> stopAndExit());
         view.getAudioButton().setOnAction(_ -> toggleAudioOutput());
         view.showAudioEnabled(model.isAudioOutputEnabled());
+        view.getSubtitleButton().setOnAction(_ -> toggleSubtitles());
     }
 
     public void installKeyboardShortcuts(Scene scene) {
@@ -79,6 +82,9 @@ public class VideoPlayerController {
             } else if (event.getCode() == KeyCode.A) {
                 toggleAudioOutput();
                 event.consume();
+            } else if (event.getCode() == KeyCode.S) {
+            	toggleSubtitles();
+            	event.consume();
             }
         });
     }
@@ -124,9 +130,41 @@ public class VideoPlayerController {
     private void onVideoSizeChanged(int width, int height) {
         videoSizeChangedHandler.accept(width, height);
     }
+    
+    // subtitles toggling
+    private void toggleSubtitles() {
+    	subtitlesEnabled = !subtitlesEnabled;
+    	view.setSubtitleButtonEnabled(subtitlesEnabled);
+    	updateSubtitles();
+    	
+    }
+    
+    private void updateSubtitles() {
+    	long timestampUs = model.getCurrentTimestampUs();
+    	
+    	if (!subtitlesEnabled) {
+    	    view.setSubtitleText("");
+    	    return;
+    	}
+    	
+    	if (subtitlesEnabled) {
+	        if (timestampUs >= 0 && timestampUs < 2_000_000) {
+	        	view.setSubtitleText("0-2");
+	    	} else if (timestampUs >= 2_000_000 && timestampUs < 5_000_000) {
+	        	view.setSubtitleText("2-5");
+	        } else if (timestampUs >= 5_000_000 && timestampUs < 8_000_000) {
+	        	view.setSubtitleText("5-8");
+	        } else if (timestampUs >= 8_000_000) {
+	        	view.setSubtitleText("over 8");
+	        }
+	    }
+    	
+    	
+    }
 
     private void onFrameReady(Image image) {
         view.setImage(image);
+        updateSubtitles();
     }
 
     private void onStatusChanged(String status) {
