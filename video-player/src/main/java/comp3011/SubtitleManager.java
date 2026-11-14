@@ -35,12 +35,4 @@ public class SubtitleManager {
 		
 		return "";
 	}
-	
-	public SubtitleManager() {
-		setSegments(List.of(
-	        new SubtitleSegment(2_000_000, 5_000_000, "Hello"),
-	        new SubtitleSegment(5_000_000, 8_000_000, "Welcome"),
-	        new SubtitleSegment(8_000_000, 11_000_000, "Goodbye")
-	    ));
-	}
 }

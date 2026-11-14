@@ -52,4 +52,28 @@ public class TranscriptionClient {
 		return webClient.post().uri(transcriptionUrl).headers(headers -> headers.setBearerAuth(apiKey))
 				.bodyValue(bodyBuilder.build()).retrieve().bodyToMono(TranscriptionResponse.class);
 	}
+	
+	// new method for subtitles assignment
+	public Mono<String> transcribeWithTimestamps(AudioData audio) {
+		MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
+		
+		ByteArrayResource audioResource = new ByteArrayResource(audio.data()) {
+			@Override
+			public String getFilename() {
+				return audio.filename();
+			}
+		};
+		
+		bodyBuilder.part("file", audioResource);
+	    bodyBuilder.part("model", "whisper-1");
+	    bodyBuilder.part("response_format", "verbose_json");
+	    bodyBuilder.part("timestamp_granularities[]", "word");
+	    bodyBuilder.part("timestamp_granularities[]", "segment");
+	    
+	    return webClient.post().uri(transcriptionUrl)
+	    		.headers(headers -> headers.setBearerAuth(apiKey))
+	            .bodyValue(bodyBuilder.build())
+	            .retrieve()
+	            .bodyToMono(String.class);
+	}
 }

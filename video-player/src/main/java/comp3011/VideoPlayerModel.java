@@ -26,6 +26,12 @@ import org.bytedeco.javacv.JavaFXFrameConverter;
 import javafx.animation.AnimationTimer;
 import javafx.scene.image.Image;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javafx.application.Platform;
+
 
 /**
  * Coordinates video playback within the model-view-controller architecture.
@@ -147,6 +153,22 @@ public class VideoPlayerModel {
     private String currentSubtitleText = "";
     
     private final List<String> effectCodes;
+    
+    // handling audio extraction
+    private final AudioExtractor audioExtractor = new AudioExtractor();
+    // handles communication with Spring Boot
+    private final SubtitleClient subtitleClient = new SubtitleClient();
+    
+    // ensures audio extraction doesn't run on JavaFX's UI thread
+    private final ExecutorService subtitleExecutor = 
+    		Executors.newSingleThreadExecutor(r -> {
+    			Thread thread = new Thread(r, "subtitle-extraction");
+    			thread.setDaemon(true);
+    			return thread;
+    		});
+    
+    // helps prevent transcription from old video being applied to newer one
+    private long subtitleRequestId = 0;
 
     public VideoPlayerModel(
             boolean audioEnabled,
@@ -184,6 +206,7 @@ public class VideoPlayerModel {
         videoDurationUs = NO_SEEK_REQUEST;
         videoFrameDurationUs = 0;
         startPlayback(0, false, NO_SEEK_REQUEST);
+        loadSubtitles(file);
     }
 
     public void startOver() {
@@ -250,6 +273,9 @@ public class VideoPlayerModel {
         }
 
         shutdownRequested = true;
+        
+        subtitleRequestId++;
+        subtitleExecutor.shutdownNow();
         
         closePlaybackResources();
         playbackTimer.stop();
@@ -922,6 +948,55 @@ public class VideoPlayerModel {
 	            MAX_PENDING_VIDEO_FRAMES,
 	            subtitleManager
 	    );
+	}
+	
+	// extract audio, upload it and store returns subtitles
+	private void loadSubtitles(File file) {
+		long requestId = ++subtitleRequestId;
+		
+		// remove subtitles from previous use
+		subtitleManager.setSegments(List.of());
+		
+		CompletableFuture.supplyAsync(() -> {
+			try {
+                return audioExtractor.extractAudio(file);
+            } catch (Exception error) {
+                throw new java.util.concurrent.CompletionException(error);
+            }
+		}, subtitleExecutor).thenCompose(audioFile -> {
+			try {
+                return subtitleClient.requestSubtitles(audioFile)
+                    .whenComplete((result, error) -> {
+                        if (!audioFile.delete()) {
+                            audioFile.deleteOnExit();
+                        }
+                    });
+            } catch (Exception error) {
+                audioFile.delete();
+                return CompletableFuture.failedFuture(error);
+            }
+		})
+		.whenComplete((segments, error) -> {
+			Platform.runLater(() -> {
+				// ignore results from previously loaded video
+				if (requestId != subtitleRequestId) {
+                    return;
+                }
+				
+				if (error != null) {
+                    System.err.println(
+                        "Subtitle loading failed: " + error.getMessage()
+                    );
+                    return;
+                }
+				
+				subtitleManager.setSegments(segments);
+
+                System.out.println(
+                    "Loaded " + segments.size() + " subtitle segments"
+                );
+			});
+		});
 	}
 
 

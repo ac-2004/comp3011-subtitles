@@ -11,16 +11,22 @@ import comp3011.assignment1.client.TranscriptionClient;
 import comp3011.assignment1.model.AudioData;
 import reactor.core.publisher.Mono;
 
+import comp3011.assignment1.model.SubtitleResponse;
+import comp3011.assignment1.subtitle.SubtitleResponseParser;
+
 @Service
 public class TranscriptionService {
 	private final TranscriptionClient transcriptionClient;
 	private final GlobalStatisticsService globalStatisticsService;
 	private static final Logger logger = LoggerFactory.getLogger(TranscriptionService.class);
+	
+	private final SubtitleResponseParser subtitleResponseParser;
 
 	public TranscriptionService(TranscriptionClient transcriptionClient,
-			GlobalStatisticsService globalStatisticsService) {
+			GlobalStatisticsService globalStatisticsService, SubtitleResponseParser subtitleResponseParser) {
 		this.transcriptionClient = transcriptionClient;
 		this.globalStatisticsService = globalStatisticsService;
+		this.subtitleResponseParser = subtitleResponseParser;
 	}
 
 	public Mono<String> transcribe(AudioData audio) {
@@ -36,5 +42,28 @@ public class TranscriptionService {
 
 			return response.text();
 		}).doOnError(error -> logger.error("Transcription request failed: {}", error.getClass().getSimpleName()));
+	}
+	
+	// with subtitles
+	public Mono<SubtitleResponse> transcribeSubtitles(AudioData audio) {
+		logger.info("Subtitle transcription request started");
+		return transcriptionClient.transcribeWithTimestamps(audio)
+				.map(subtitleResponseParser::parse)
+				.doOnSuccess(response ->
+				logger.info("Subtitle transcription completed"))
+				.doOnError(error -> {
+				    if (error instanceof
+				            org.springframework.web.reactive.function.client.WebClientResponseException responseError) {
+
+				        logger.error(
+				            "Whisper API error: status={}, body={}",
+				            responseError.getStatusCode(),
+				            responseError.getResponseBodyAsString()
+				        );
+
+				    } else {
+				        logger.error("Whisper request failed", error);
+				    }
+				});
 	}
 }
