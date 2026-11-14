@@ -139,10 +139,15 @@ public class VideoPlayerController {
     
     // subtitles toggling
     private void toggleSubtitles() {
-    	subtitlesEnabled = !subtitlesEnabled;
-    	view.setSubtitleButtonEnabled(subtitlesEnabled);
-    	updateSubtitles();
-    	
+        subtitlesEnabled = !subtitlesEnabled;
+
+        view.setSubtitleButtonEnabled(subtitlesEnabled);
+
+        if (subtitlesEnabled) {
+            model.ensureSubtitlesLoaded();
+        }
+
+        updateSubtitles();
     }
     
     private void updateSubtitles() {

@@ -21,7 +21,7 @@ public class SubtitleFrameProcessor extends FrameProcessor {
 	public void process(Frame frame, InfoFrame info) throws Exception {
 		// TODO Auto-generated method stub
 		long timestampUs = info.timestampUs();
-		String currentSubtitle = subtitleManager.getSubtitleAt(timestampUs);
+		currentSubtitle = subtitleManager.getSubtitleAt(timestampUs);
 		
 	}
 	

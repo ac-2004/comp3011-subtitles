@@ -169,6 +169,8 @@ public class VideoPlayerModel {
     
     // helps prevent transcription from old video being applied to newer one
     private long subtitleRequestId = 0;
+    
+    private boolean subtitleLoadStarted = false;
 
     public VideoPlayerModel(
             boolean audioEnabled,
@@ -202,11 +204,21 @@ public class VideoPlayerModel {
     }
 
     public void play(File file) {
+        subtitleRequestId++;
+        subtitleLoadStarted = false;
+
+        subtitleManager.setSegments(List.of());
+        currentSubtitleText = "";
+
         videoFile = file;
         videoDurationUs = NO_SEEK_REQUEST;
         videoFrameDurationUs = 0;
+
         startPlayback(0, false, NO_SEEK_REQUEST);
-        loadSubtitles(file);
+
+        if (effectCodes.contains("S")) {
+            ensureSubtitlesLoaded();
+        }
     }
 
     public void startOver() {
@@ -948,6 +960,16 @@ public class VideoPlayerModel {
 	            MAX_PENDING_VIDEO_FRAMES,
 	            subtitleManager
 	    );
+	}
+	
+	public void ensureSubtitlesLoaded() {
+	    if (shutdownRequested || videoFile == null
+	            || subtitleLoadStarted) {
+	        return;
+	    }
+
+	    subtitleLoadStarted = true;
+	    loadSubtitles(videoFile);
 	}
 	
 	// extract audio, upload it and store returns subtitles
