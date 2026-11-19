@@ -16,6 +16,7 @@ import comp3011.assignment1.model.AudioData;
 import comp3011.assignment1.model.GlobalStatsResponse;
 import comp3011.assignment1.model.TranscriptionResponse;
 import comp3011.assignment1.model.TranscriptionUsage;
+import comp3011.assignment1.subtitle.SubtitleResponseParser;
 import reactor.core.publisher.Mono;
 
 class TranscriptionServiceTest {
@@ -28,10 +29,15 @@ class TranscriptionServiceTest {
 
 		// Use the real statistics service.
 		GlobalStatisticsService globalStatisticsService = new GlobalStatisticsService();
+		
+		SubtitleResponseParser parser = mock(SubtitleResponseParser.class);
 
+		// provide an audio usage counter for the updated service
+		AudioUsageService audioUsageService = new AudioUsageService();
+		
 		// Test the real transcription service.
 		TranscriptionService transcriptionService = new TranscriptionService(transcriptionClient,
-				globalStatisticsService);
+				globalStatisticsService, parser, audioUsageService);
 
 		AudioData audio = new AudioData("fake audio".getBytes(StandardCharsets.UTF_8), "recording.webm", "audio/webm");
 

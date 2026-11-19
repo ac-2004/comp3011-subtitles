@@ -4,7 +4,7 @@
  * 
  * Authors:
  *   1. Simon Ratcliffe, in collaboration with GPT-5.6 Terra
- *   2. <student name and student number insert here upon modification>
+ *   2. Ayush Chauhan, a1870640
  *
  * Copyright 2026 Simon Ratcliffe
  */
@@ -30,6 +30,11 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.SVGPath;
 import javafx.scene.shape.StrokeLineCap;
+
+import javafx.scene.shape.StrokeType;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 
 /**
  * The view part of the video player model-view-controller architecture.
@@ -62,7 +67,7 @@ public class VideoPlayerView {
     private final Button subtitleButton;
     
     // subtitle label references JavaFX Label as it displays text
-    private final Label subtitleLabel;
+    private final Text subtitleLabel;
 
     public VideoPlayerView() {
         imageView.setPreserveRatio(true);
@@ -86,7 +91,16 @@ public class VideoPlayerView {
         // initalising subtitles button
         subtitleButton = iconButton(createSubtitleIcon("CC"));
         
-        subtitleLabel = new Label("");
+        // styling subtitles
+        subtitleLabel = new Text("");
+        subtitleLabel.setFont(Font.font("Arial", 22));
+        subtitleLabel.setFill(Color.WHITE);
+        subtitleLabel.setStroke(Color.BLACK);
+        subtitleLabel.setStrokeWidth(1.5);
+        subtitleLabel.setStrokeType(StrokeType.OUTSIDE);
+        subtitleLabel.setTextAlignment(TextAlignment.CENTER);
+        subtitleLabel.setVisible(false);
+        
         // StackPane responsible for containing video display
         // adding to video
         // getChildren() returns UI elements in StackPane
@@ -98,15 +112,7 @@ public class VideoPlayerView {
         // insets creates spacing around label. 
         StackPane.setMargin(subtitleLabel,  new Insets(0, 20, 25, 20));
         
-        // styling the subtitles
-        subtitleLabel.setStyle(
-    		"-fx-text-fill: white;" +
-    	    "-fx-font-size: 22px;" +
-    	    "-fx-font-family: Arial;" +
-    	    "-fx-background-color: rgba(0, 0, 0, 0.7);" +
-    	    "-fx-padding: 6px 12px;"
-    	);
-
+        
         HBox controls = new HBox(
                 10,
                 startOverButton,
@@ -198,13 +204,13 @@ public class VideoPlayerView {
     
     // updating subtitle with playback
     public void setSubtitleText(String subtext) {
-    	subtitleLabel.setText(subtext);
-    	if (subtext.isEmpty()) {
-    		subtitleLabel.setVisible(false);
-    	} else {
-    		subtitleLabel.setVisible(true);
-    	}
-    		
+    	// only update the overlay when the caption changes
+        if (subtext.equals(subtitleLabel.getText())) {
+            return;
+        }
+
+        subtitleLabel.setText(subtext);
+        subtitleLabel.setVisible(!subtext.isEmpty());		
     }
 
     public void setPlaybackControlsDisabled(boolean disabled) {

@@ -185,7 +185,7 @@ public class CommandLineController {
         case "--mottle-frames"  -> "m";
         case "--bleed-frames"   -> "b";
         case "--pepper-frames"  -> "p";
-        case "--subtitles-frames" -> "S"; // long form
+        case "--subtitle-frames" -> "S"; // long form
         default                 -> null;
     	};
     }

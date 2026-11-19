@@ -3,6 +3,7 @@ package comp3011.assignment1.controller;
 //mvc regression tests for global statistics responses and error handling.
 
 import static org.mockito.Mockito.when;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import comp3011.assignment1.model.GlobalStatsResponse;
 import comp3011.assignment1.service.GlobalStatisticsService;
 
+import comp3011.assignment1.service.AudioUsageService;
+
+
 @WebMvcTest(StatisticsController.class)
 public class StatisticsControllerTest {
 
@@ -24,6 +28,10 @@ public class StatisticsControllerTest {
 
 	@MockitoBean
 	private GlobalStatisticsService globalStatisticsService;
+	
+	// provide the controller's audio usage dependency in the mvc test
+	@MockitoBean
+	private AudioUsageService audioUsageService;
 
 	@Test
 	void getGlobalStats_returnsCorrectStatistics() throws Exception {
@@ -63,5 +71,15 @@ public class StatisticsControllerTest {
 
 				// The timestamp is generated dynamically, so we only verify that it exists.
 				.andExpect(jsonPath("$.timestamp").exists());
+	}
+	
+	// verify the usage endpoint returns seconds under the usage field
+	@Test
+	void getAudioUsage_returnsUsageObject() throws Exception {
+	    when(audioUsageService.getUsageSeconds()).thenReturn(137.25);
+
+	    mockMvc.perform(get("/api/v1/global/usage"))
+	            .andExpect(status().isOk())
+	            .andExpect(jsonPath("$.usage").value(137.25));
 	}
 }

@@ -54,7 +54,8 @@ public class VideoPlayerController {
                 this::onFrameReady,
                 this::onStatusChanged,
                 this::onPlaybackStateChanged,
-                this::onAudioOutputStateChanged);
+                this::onAudioOutputStateChanged,
+                this::updateSubtitles);
 
         view.getStartOverButton().setOnAction(_ -> startOver());
         view.getBackFiveButton().setOnAction(_ -> backFiveSeconds());
@@ -151,20 +152,14 @@ public class VideoPlayerController {
     }
     
     private void updateSubtitles() {
-    	long timestampUs = model.getCurrentTimestampUs();
+    	long timestampUs = model.getDisplayedMediaTimestampUs();
     	
-    	if (!subtitlesEnabled) {
+    	if (!subtitlesEnabled || timestampUs == -1) {
             view.setSubtitleText("");
             return;
         }
 
-        String subtitle = model.getSubtitleAt(timestampUs);
-        
-        if (subtitle.isEmpty()) {
-        	subtitle = model.getSubtitleAt(model.getCurrentTimestampUs());
-        }
-        
-        view.setSubtitleText(subtitle);
+        view.setSubtitleText(model.getSubtitleAt(timestampUs));
     }
 
     private void onFrameReady(Image image) {

@@ -16,6 +16,8 @@ import java.util.List;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.Duration;
+
 public class SubtitleClient {
 	
 	private static final URI SERVER_URL = 
@@ -46,6 +48,7 @@ public class SubtitleClient {
 		
 		HttpRequest request = HttpRequest.newBuilder()
 	            .uri(SERVER_URL)
+	            .timeout(Duration.ofMinutes(2))
 	            .header("Content-Type",
 	                    "multipart/form-data; boundary=" + boundary)
 	            .POST(body)

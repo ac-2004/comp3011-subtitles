@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 public class AudioExtractorTest {
 
+	// requires .mp4 file to work
     @Test
     void extractsAudioFromVideo() throws Exception {
 

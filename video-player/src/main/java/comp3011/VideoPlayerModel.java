@@ -92,6 +92,8 @@ public class VideoPlayerModel {
     private final Consumer<String> statusChangedHandler;
     private final BiConsumer<Boolean, Boolean> playbackStateChangedHandler;
     private final Consumer<Boolean> audioOutputStateChangedHandler;
+    
+    private final Runnable subtitlesChangedHandler;
 
     // This is the critical wiring that allows the framework (JavaFX) to call
     // into our model logic every time it goes around its event loop. Every GUI
@@ -171,6 +173,10 @@ public class VideoPlayerModel {
     private long subtitleRequestId = 0;
     
     private boolean subtitleLoadStarted = false;
+    
+    private long displayedMediaTimestampUs = -1;
+   
+    
 
     public VideoPlayerModel(
             boolean audioEnabled,
@@ -179,7 +185,8 @@ public class VideoPlayerModel {
             Consumer<Image> frameReadyHandler,
             Consumer<String> statusChangedHandler,
             BiConsumer<Boolean, Boolean> playbackStateChangedHandler,
-            Consumer<Boolean> audioOutputStateChangedHandler) {
+            Consumer<Boolean> audioOutputStateChangedHandler,
+            Runnable subtitlesChangedHandler) {
         audioOutputEnabled = audioEnabled;
         this.videoSizeChangedHandler = videoSizeChangedHandler;
         this.frameReadyHandler = frameReadyHandler;
@@ -187,12 +194,16 @@ public class VideoPlayerModel {
         this.playbackStateChangedHandler = playbackStateChangedHandler;
         this.audioOutputStateChangedHandler = audioOutputStateChangedHandler;
         this.effectCodes = List.copyOf(effectCodes);
-
+        this.subtitlesChangedHandler = subtitlesChangedHandler;
     }
     
     // making currentTimestampUs accessible
     public long getCurrentTimestampUs() {
     	return currentTimestampUs;
+    }
+    
+    public long getDisplayedMediaTimestampUs() {
+        return displayedMediaTimestampUs;
     }
     
     public String getCurrentSubtitleText() {
@@ -209,6 +220,8 @@ public class VideoPlayerModel {
 
         subtitleManager.setSegments(List.of());
         currentSubtitleText = "";
+        
+        displayedMediaTimestampUs = -1;
 
         videoFile = file;
         videoDurationUs = NO_SEEK_REQUEST;
@@ -273,6 +286,7 @@ public class VideoPlayerModel {
         closePlaybackResources();
         currentTimestampUs = 0;
         pauseRequested = false;
+        displayedMediaTimestampUs = -1;
         notifyStatusChanged("Stopped");
         notifyFrameReady(null);
         notifyPlaybackStateChanged();
@@ -357,7 +371,7 @@ public class VideoPlayerModel {
 
         try {
         	retireProcessingSession();
-            grabber.setTimestamp(grabTimestampUs);
+        	grabber.setVideoTimestamp(grabTimestampUs);
             resetPlaybackClock(logicalTimestampUs);
             flushAudioOutput();
             prepareNextFrame();
@@ -418,7 +432,7 @@ public class VideoPlayerModel {
         }
 
         if (startTimestampUs > 0) {
-            grabber.setTimestamp(startTimestampUs);
+        	grabber.setVideoTimestamp(startTimestampUs);
         }
     }
 
@@ -604,6 +618,9 @@ public class VideoPlayerModel {
     	        grabs++) {
             Frame frame = grabFrame();
             if (frame == null) {
+            	// record how many image frames were submitted when the decoder reached eof
+            	System.out.printf("Decoder EOF: submitted image frames=%d%n", nextFrameSequence);
+            	
                 decodingFinished = true;
 
                 if (processingSession != null) {
@@ -755,8 +772,11 @@ public class VideoPlayerModel {
 	            displayPreparedFrame(now);
 	        }
 	
-	        // keep multiple processing jobs supplied to the workers.
-	        if (!pauseRequested) {
+	        // keep looking for the first image after a paused seek
+	        boolean waitingForSeekImage = relativeSeekBaseUs != NO_SEEK_REQUEST
+	                && nextFrameSequence == 0;
+
+	        if (!pauseRequested || waitingForSeekImage) {
 	            prepareNextFrame();
 	        }
 	
@@ -778,24 +798,13 @@ public class VideoPlayerModel {
     private void displayPreparedFrame(long now) {
         PreparedFrame frame = preparedFrame;
         preparedFrame = null;
+        
+        // update playback state before notifying the view
         currentTimestampUs = frame.logicalTimestampUs();
         currentSubtitleText = frame.subtitleText();
         relativeSeekBaseUs = NO_SEEK_REQUEST;
 
-        // Dump some logging to the console once per second so that real time performance can be monitored.
-        if (intFrameRate > 0 && frame.frameNumber() % intFrameRate == 0) {
-            long remainingUs = (frame.targetTimeNs() - frame.preparedAtNs()) / 1_000L;
-            if (remainingUs < 0) {
-                System.out.printf("Frame headroom is \u001B[31m%5dus\u001B[0m out of %dus spare.%n",
-                        remainingUs,
-                        videoFrameDurationUs);
-            } else {
-                System.out.printf("Frame headroom is \u001B[32m%5dus\u001B[0m out of %dus spare.%n",
-                        remainingUs,
-                        videoFrameDurationUs);
-            }
-        }
-
+        displayedMediaTimestampUs = frame.mediaTimestampUs();
         notifyFrameReady(frame.image());
     }
 
@@ -842,6 +851,15 @@ public class VideoPlayerModel {
     }
 
     private void finishPlayback() {
+    	// capture the last displayed time before replacing it with the media duration
+    	System.out.printf(
+    	        "Playback finished: last displayed=%.3fs, media duration=%.3fs, "
+    	                + "submitted image frames=%d, reported total=%d%n",
+    	        currentTimestampUs / 1_000_000.0,
+    	        videoDurationUs / 1_000_000.0,
+    	        nextFrameSequence,
+    	        totalVideoFrames);
+    	
         long endTimestampUs = videoDurationUs != NO_SEEK_REQUEST
                 ? videoDurationUs
                 : currentTimestampUs;
@@ -1006,6 +1024,7 @@ public class VideoPlayerModel {
                 }
 				
 				if (error != null) {
+					subtitleLoadStarted = false;
                     System.err.println(
                         "Subtitle loading failed: " + error.getMessage()
                     );
@@ -1014,9 +1033,12 @@ public class VideoPlayerModel {
 				
 				subtitleManager.setSegments(segments);
 
-                System.out.println(
-                    "Loaded " + segments.size() + " subtitle segments"
-                );
+				// Notify the controller that new subtitles are available.
+				subtitlesChangedHandler.run();
+
+				System.out.println(
+				    "Loaded " + segments.size() + " subtitle segments"
+				);
 			});
 		});
 	}

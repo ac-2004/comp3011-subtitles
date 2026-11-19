@@ -17,6 +17,7 @@ import comp3011.assignment1.client.TranscriptionClient;
 import comp3011.assignment1.model.AudioData;
 import comp3011.assignment1.model.TranscriptionResponse;
 import comp3011.assignment1.model.TranscriptionUsage;
+import comp3011.assignment1.subtitle.SubtitleResponseParser;
 import reactor.core.publisher.Mono;
 
 //use the spring output capture extension so each test can inspect application logs
@@ -32,9 +33,14 @@ class TranscriptionServiceLoggingTest {
 
 		// use the real statistics service when creating the transcription service
 		GlobalStatisticsService globalStatisticsService = new GlobalStatisticsService();
+		
+		SubtitleResponseParser parser = mock(SubtitleResponseParser.class);
+		
+		// provide an audio usage counter for the updated service
+		AudioUsageService audioUsageService = new AudioUsageService();
 
 		TranscriptionService transcriptionService = new TranscriptionService(transcriptionClient,
-				globalStatisticsService);
+				globalStatisticsService, parser, audioUsageService);
 
 		// create sample audio data
 		AudioData audio = new AudioData(new byte[] { 1, 2, 3 }, "recording.webm", "audio/webm");
@@ -60,9 +66,14 @@ class TranscriptionServiceLoggingTest {
 		TranscriptionClient transcriptionClient = mock(TranscriptionClient.class);
 
 		GlobalStatisticsService globalStatisticsService = new GlobalStatisticsService();
+		
+		SubtitleResponseParser parser = mock(SubtitleResponseParser.class);
+		
+		// provide an audio usage counter for the updated service
+		AudioUsageService audioUsageService = new AudioUsageService();
 
 		TranscriptionService transcriptionService = new TranscriptionService(transcriptionClient,
-				globalStatisticsService);
+				globalStatisticsService, parser, audioUsageService);
 
 		AudioData audio = new AudioData(new byte[] { 1, 2, 3 }, "recording.webm", "audio/webm");
 
