@@ -95,7 +95,8 @@ public class VideoPlayerView {
         subtitleLabel = new Text("");
         subtitleLabel.setFont(Font.font("Arial", 22));
         subtitleLabel.setFill(Color.WHITE);
-        subtitleLabel.setStroke(Color.BLACK);
+        // below line causes glitching
+        // subtitleLabel.setStroke(Color.BLACK);
         subtitleLabel.setStrokeWidth(1.5);
         subtitleLabel.setStrokeType(StrokeType.OUTSIDE);
         subtitleLabel.setTextAlignment(TextAlignment.CENTER);
